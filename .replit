@@ -1,0 +1,2 @@
+run = "gunicorn app:app"
+modules = ["python-3.11"]

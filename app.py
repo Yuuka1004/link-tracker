@@ -24,6 +24,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS visits (
             )''')
 conn.commit()
 
+
 # Halaman utama
 @app.route('/')
 def home():
@@ -36,6 +37,7 @@ def home():
         </form>
     '''
 
+
 # Generate tracking link
 @app.route('/generate', methods=['POST'])
 def generate():
@@ -44,6 +46,7 @@ def generate():
     with open(f'trackers/{tracker_id}.txt', 'w') as f:
         f.write(redirect_url)
     return f'Tracking link created: <a href="/track/{tracker_id}">/track/{tracker_id}</a>'
+
 
 # Proses tracking
 @app.route('/track/<tracker_id>')
@@ -60,8 +63,9 @@ def track(tracker_id):
     country = geo_data.get('country', 'Unknown')
     timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
-    c.execute('INSERT INTO visits (tracker_id, ip, city, region, country, timestamp, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?)',
-              (tracker_id, ip, city, region, country, timestamp, user_agent))
+    c.execute(
+        'INSERT INTO visits (tracker_id, ip, city, region, country, timestamp, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        (tracker_id, ip, city, region, country, timestamp, user_agent))
     conn.commit()
 
     try:
@@ -71,10 +75,11 @@ def track(tracker_id):
     except:
         return "Invalid tracker ID or redirect URL not set."
 
+
 # Lihat log per tracker
 @app.route('/logs/<tracker_id>')
 def logs(tracker_id):
-    c.execute('SELECT * FROM visits WHERE tracker_id = ?', (tracker_id,))
+    c.execute('SELECT * FROM visits WHERE tracker_id = ?', (tracker_id, ))
     logs = c.fetchall()
     return render_template_string('''
         <h2>Tracking Logs for {{ tracker_id }}</h2>
@@ -84,7 +89,10 @@ def logs(tracker_id):
             <tr>{% for col in row[1:] %}<td>{{ col }}</td>{% endfor %}</tr>
             {% endfor %}
         </table>
-    ''', tracker_id=tracker_id, logs=logs)
+    ''',
+                                  tracker_id=tracker_id,
+                                  logs=logs)
+
 
 # Lihat semua log
 @app.route('/data')
@@ -114,6 +122,3 @@ def view_data():
     </table>
     """
     return render_template_string(html, rows=rows)
-
-if __name__ == '__main__':
-    app.run(debug=True)
